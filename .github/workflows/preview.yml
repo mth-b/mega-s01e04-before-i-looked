@@ -1,0 +1,64 @@
+name: Publish digest preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      marker:
+        description: Course lane marker; leave empty only for approved cleanup
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: digest-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global pnpm@12.16.1
+      - run: pnpm install --frozen-lockfile --registry=https://registry.npmjs.org
+      - run: pnpm test && pnpm typecheck
+      - name: Save the rendered digest
+        env:
+          LANE_MARKER: ${{ inputs.marker }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digest-preview"
+          pnpm start > "$RUNNER_TEMP/rig.log" 2>&1 &
+          server=$!
+          trap 'kill "$server"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8787/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://localhost:8787/digest/2026-10-28 --output "$RUNNER_TEMP/digest-preview/index.html"
+          node --input-type=module -e '
+            import fs from "node:fs";
+            import assert from "node:assert/strict";
+            const html = fs.readFileSync(process.env.RUNNER_TEMP + "/digest-preview/index.html", "utf8");
+            const marker = process.env.LANE_MARKER?.trim();
+            assert.ok(html.includes(marker || "no marker set"));
+            assert.ok(html.includes("bad lines: 1"));
+            assert.equal((html.match(/<tr/g) || []).length, 6);
+            assert.ok(!html.includes("<script"));
+          '
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/digest-preview
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
