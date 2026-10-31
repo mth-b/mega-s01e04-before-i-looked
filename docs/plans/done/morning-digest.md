@@ -1,6 +1,6 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
 ---
@@ -77,3 +77,21 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issue list and verification
+
+- [#1 Run log reader](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/1)
+- [#2 Route tests](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/2)
+- [#3 JSON endpoint](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/3)
+- [#4 HTML page](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/4)
+- [#5 Board links](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/5)
+- [#6 Preview review](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/6)
+- [#7 Preview cleanup](https://github.com/mth-b/mega-s01e04-before-i-looked/issues/7)
+
+All 41 tests and type checks passed. The course reviewer confirmed seeing the
+marked preview before cleanup. After separate student approval, deployment
+41188498962 regenerated the HTML with LANE_MARKER unset and overwrote the same
+GitHub Pages URL. A fetch confirmed the banner reads "no marker set" and the
+five-job digest is unchanged.
+
+Preview: https://mth-b.github.io/mega-s01e04-before-i-looked/
