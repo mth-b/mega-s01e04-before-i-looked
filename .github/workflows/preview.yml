@@ -37,6 +37,7 @@ jobs:
           LANE_MARKER: ${{ inputs.marker }}
         run: |
           mkdir -p "$RUNNER_TEMP/digest-preview"
+          if [ -z "$LANE_MARKER" ]; then unset LANE_MARKER; fi
           pnpm start > "$RUNNER_TEMP/rig.log" 2>&1 &
           server=$!
           trap 'kill "$server"' EXIT
